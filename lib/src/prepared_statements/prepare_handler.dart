@@ -40,7 +40,7 @@ class PrepareHandler extends Handler {
 
   HandlerResponse processResponse(Buffer response) {
     log.fine("Prepare processing response");
-    var packet = checkResponse(response, true);
+    dynamic packet = checkResponse(response, true);
     if (packet == null) {
       log.fine('Not an OK packet, params to read: $_parametersToRead');
       if (_parametersToRead > -1) {

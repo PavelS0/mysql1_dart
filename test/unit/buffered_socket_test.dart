@@ -60,7 +60,7 @@ class MockBuffer extends Mock implements Buffer {}
 
 void main() {
   group('buffered socket', () {
-    var rawSocket;
+    MockSocket rawSocket;
     SocketFactory factory;
 
     setUp(() {
@@ -72,9 +72,8 @@ void main() {
     });
 
     test('can read data which is already available', () async {
-      var c = new Completer();
-
-      var socket;
+      var c = Completer<dynamic>();
+      BufferedSocket socket;
       var thesocket = await BufferedSocket.connect(
           'localhost', 100, const Duration(seconds: 5), onDataReady: () async {
         var buffer = new Buffer(4);
@@ -88,9 +87,9 @@ void main() {
     });
 
     test('can read data which is partially available', () async {
-      var c = new Completer();
+      var c = new Completer<dynamic>();
 
-      var socket;
+      BufferedSocket socket;
       var thesocket = await BufferedSocket.connect(
           'localhost', 100, const Duration(seconds: 5), onDataReady: () async {
         var buffer = new Buffer(4);
@@ -106,7 +105,7 @@ void main() {
     });
 
     test('can read data which is not yet available', () async {
-      var c = new Completer();
+      var c = Completer<dynamic>();
       var socket = await BufferedSocket.connect(
           'localhost', 100, const Duration(seconds: 5),
           onDataReady: () {},
@@ -124,7 +123,7 @@ void main() {
 
     test('can read data which is not yet available, arriving in two chunks',
         () async {
-      var c = new Completer();
+      var c = Completer<dynamic>();
       var socket = await BufferedSocket.connect(
           'localhost', 100, const Duration(seconds: 5),
           onDataReady: () {},

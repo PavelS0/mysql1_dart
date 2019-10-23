@@ -29,7 +29,7 @@ void main() {
 
   test('timeout connect test', () async {
     // The connect call should raise a timeout.
-    var sock;
+    ServerSocket sock;
     bool thrown = false;
     try {
       sock = await ServerSocket.bind("localhost", 12346);
@@ -65,11 +65,11 @@ void main() {
   });
 
   test('socket closed before handshake', () async {
-    var sock;
+    ServerSocket sock;
     bool thrown = false;
     try {
       sock = await ServerSocket.bind("localhost", 12347);
-      sock.listen((socket) {
+      sock.listen((Socket socket) {
         socket.close();
       });
       await MySqlConnection.connect(new ConnectionSettings(
@@ -85,7 +85,7 @@ void main() {
   });
 
   test('socket too many connections on connect', () async {
-    var sock;
+    ServerSocket sock;
     bool thrown = false;
     try {
       sock = await ServerSocket.bind("localhost", 12348);
@@ -131,7 +131,7 @@ void main() {
   });
 
   test('bad protocol', () async {
-    var sock;
+    ServerSocket sock;
     bool thrown = false;
     try {
       sock = await ServerSocket.bind("localhost", 12348);

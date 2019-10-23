@@ -16,68 +16,149 @@ import 'package:test/test.dart';
 void main() {
   group('ExecuteQueryHandler.createNullMap', () {
     test('can build empty map', () {
-      var handler = new ExecuteQueryHandler(null, false, []);
+      List<dynamic> list = List<dynamic>();
+      var handler = new ExecuteQueryHandler(null, false, list);
       var nullmap = handler.createNullMap();
-      expect(nullmap, equals([]));
+      expect(nullmap, equals(list));
     });
 
     test('can build map with no nulls', () {
-      var handler = new ExecuteQueryHandler(null, false, [1]);
+      List<dynamic> list = List<dynamic>(1);
+      list[0] = 1;
+      var handler = new ExecuteQueryHandler(null, false, list);
       var nullmap = handler.createNullMap();
       expect(nullmap, equals([0]));
     });
 
     test('can build map with one null', () {
-      var handler = new ExecuteQueryHandler(null, false, [null]);
+      List<dynamic> list = List<dynamic>(1);
+      list[0] = null;
+      var handler = new ExecuteQueryHandler(null, false, list);
       var nullmap = handler.createNullMap();
       expect(nullmap, equals([1]));
     });
 
     test('can build map with eight nulls', () {
+      List<dynamic> list = List<dynamic>(8);
+      list[0] = null;
+      list[1] = null;
+      list[2] = null;
+      list[3] = null;
+      list[4] = null;
+      list[5] = null;
+      list[6] = null;
+      list[7] = null;
+
       var handler = new ExecuteQueryHandler(
-          null, false, [null, null, null, null, null, null, null, null]);
+          null, false, list);
       var nullmap = handler.createNullMap();
       expect(nullmap, equals([255]));
     });
 
     test('can build map with eight not nulls', () {
+      List<dynamic> list = List<dynamic>(8);
+      list[0] = 0;
+      list[1] = 0;
+      list[2] = 0;
+      list[3] = 0;
+      list[4] = 0;
+      list[5] = 0;
+      list[6] = 0;
+      list[7] = 0;
+
       var handler =
-          new ExecuteQueryHandler(null, false, [0, 0, 0, 0, 0, 0, 0, 0]);
+          new ExecuteQueryHandler(null, false, list);
       var nullmap = handler.createNullMap();
       expect(nullmap, equals([0]));
     });
 
     test('can build map with some nulls and some not', () {
+      List<dynamic> list = List<dynamic>(8);
+      list[0] = null;
+      list[1] = 0;
+      list[2] = 0;
+      list[3] = 0;
+      list[4] = 0;
+      list[5] = 0;
+      list[6] = 0;
+      list[7] = null;
       var handler =
-          new ExecuteQueryHandler(null, false, [null, 0, 0, 0, 0, 0, 0, null]);
+          new ExecuteQueryHandler(null, false, list);
       var nullmap = handler.createNullMap();
       expect(nullmap, equals([129]));
     });
 
     test('can build map with some nulls and some not', () {
+      List<dynamic> list = List<dynamic>(8);
+      list[0] = null;
+      list[1] = 0;
+      list[2] = 0;
+      list[3] = 0;
+      list[4] = 0;
+      list[5] = 0;
+      list[6] = 0;
+      list[7] = null;
       var handler =
-          new ExecuteQueryHandler(null, false, [null, 0, 0, 0, 0, 0, 0, null]);
+          new ExecuteQueryHandler(null, false, list);
       var nullmap = handler.createNullMap();
       expect(nullmap, equals([129]));
     });
 
     test('can build map which is more than one byte', () {
+      List<dynamic> list = List<dynamic>(16);
+      list[0] = null;
+      list[1] = 0;
+      list[2] = 0;
+      list[3] = 0;
+      list[4] = 0;
+      list[5] = 0;
+      list[6] = 0;
+      list[7] = null;
+      list[8] = 0;
+      list[9] = 0;
+      list[10] = 0;
+      list[11] = 0;
+      list[12] = 0;
+      list[13] = 0;
+      list[14] = 0;
+      list[15] = 0;
       var handler = new ExecuteQueryHandler(
-          null, false, [null, 0, 0, 0, 0, 0, 0, null, 0, 0, 0, 0, 0, 0, 0, 0]);
+          null, false, list);
       var nullmap = handler.createNullMap();
       expect(nullmap, equals([129, 0]));
     });
 
     test('can build map which just is more than one byte', () {
+      List<dynamic> list = List<dynamic>(9);
+      list[0] = null;
+      list[1] = 0;
+      list[2] = 0;
+      list[3] = 0;
+      list[4] = 0;
+      list[5] = 0;
+      list[6] = 0;
+      list[7] = null;
+      list[8] = 0;
+  
       var handler = new ExecuteQueryHandler(
-          null, false, [null, 0, 0, 0, 0, 0, 0, null, 0]);
+          null, false, list);
       var nullmap = handler.createNullMap();
       expect(nullmap, equals([129, 0]));
     });
 
     test('can build map which just is more than one byte with a null', () {
+      List<dynamic> list = List<dynamic>(9);
+      list[0] = null;
+      list[1] = 0;
+      list[2] = 0;
+      list[3] = 0;
+      list[4] = 0;
+      list[5] = 0;
+      list[6] = 0;
+      list[7] = null;
+      list[8] = null;
       var handler = new ExecuteQueryHandler(
-          null, false, [null, 0, 0, 0, 0, 0, 0, null, null]);
+          null, false, list);
       var nullmap = handler.createNullMap();
       expect(nullmap, equals([129, 1]));
     });
@@ -85,8 +166,18 @@ void main() {
     test(
         'can build map which just is more than one byte with a null, another pattern',
         () {
+      List<dynamic> list = List<dynamic>(9);
+      list[0] = null;
+      list[1] = 0;
+      list[2] = null;
+      list[3] = 0;
+      list[4] = 0;
+      list[5] = 0;
+      list[6] = 0;
+      list[7] = null;
+      list[8] = null;
       var handler = new ExecuteQueryHandler(
-          null, false, [null, 0, null, 0, 0, 0, 0, null, null]);
+          null, false, list);
       var nullmap = handler.createNullMap();
       expect(nullmap, equals([129 + 4, 1]));
     });
@@ -103,8 +194,8 @@ void main() {
       var preparedQuery = new MockPreparedQuery();
       when(preparedQuery.statementHandlerId).thenReturn(123);
 
-      var handler = new ExecuteQueryHandler(preparedQuery, false, []);
-      handler.preparedValues = [];
+      var handler = new ExecuteQueryHandler(preparedQuery, false, List<dynamic>());
+      handler.preparedValues = List<dynamic>();
       var buffer = handler.writeValuesToBuffer([], 0, types);
       expect(buffer.length, equals(11));
       expect(buffer.list, equals([23, 123, 0, 0, 0, 0, 1, 0, 0, 0, 1]));
@@ -114,8 +205,8 @@ void main() {
       var preparedQuery = new MockPreparedQuery();
       when(preparedQuery.statementHandlerId).thenReturn(123);
 
-      var handler = new ExecuteQueryHandler(preparedQuery, true, []);
-      handler.preparedValues = [];
+      var handler = new ExecuteQueryHandler(preparedQuery, true, List<dynamic>());
+      handler.preparedValues = List<dynamic>();
       var buffer = handler.writeValuesToBuffer([], 0, types);
       expect(buffer.length, equals(11));
       expect(buffer.list, equals([23, 123, 0, 0, 0, 0, 1, 0, 0, 0, 0]));
@@ -125,8 +216,8 @@ void main() {
       var preparedQuery = new MockPreparedQuery();
       when(preparedQuery.statementHandlerId).thenReturn(123);
 
-      var handler = new ExecuteQueryHandler(preparedQuery, true, []);
-      handler.preparedValues = [];
+      var handler = new ExecuteQueryHandler(preparedQuery, true, List<dynamic>());
+      handler.preparedValues = List<dynamic>();
       var buffer = handler.writeValuesToBuffer([5, 6, 7], 0, types);
       expect(buffer.length, equals(14));
       expect(
@@ -138,8 +229,10 @@ void main() {
       when(preparedQuery.statementHandlerId).thenReturn(123);
 
       types = [100];
-      var handler = new ExecuteQueryHandler(preparedQuery, false, [123]);
-      handler.preparedValues = [123];
+      List<dynamic> list = List<dynamic>(1);
+      list[0] = 123;
+      var handler = new ExecuteQueryHandler(preparedQuery, false, list);
+      handler.preparedValues = list;
       var buffer = handler.writeValuesToBuffer([5, 6, 7], 8, types);
       expect(buffer.length, equals(23));
       expect(
@@ -178,7 +271,7 @@ void main() {
 
     setUp(() {
       preparedQuery = new MockPreparedQuery();
-      handler = new ExecuteQueryHandler(preparedQuery, false, []);
+      handler = new ExecuteQueryHandler(preparedQuery, false, List<dynamic>());
     });
 
     test('can prepare int values correctly', () {
@@ -218,11 +311,11 @@ void main() {
 
     setUp(() {
       preparedQuery = new MockPreparedQuery();
-      handler = new ExecuteQueryHandler(preparedQuery, false, []);
+      handler = new ExecuteQueryHandler(preparedQuery, false, List<dynamic>());
     });
 
     test('can measure int values correctly', () {
-      expect(handler.measureValue(123, 123), equals(8));
+      expect(handler.measureValue(123, [123]), equals(8));
     });
 
     test('can measure short string correctly', () {

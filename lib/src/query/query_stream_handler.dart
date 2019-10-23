@@ -46,7 +46,7 @@ class QueryStreamHandler extends Handler {
 
   HandlerResponse processResponse(Buffer response) {
     log.fine("Processing query response");
-    var packet = checkResponse(response, false, _state == STATE_ROW_PACKETS);
+    dynamic packet = checkResponse(response, false, _state == STATE_ROW_PACKETS);
     if (packet == null) {
       if (response[0] == PACKET_EOF) {
         if (_state == STATE_FIELD_PACKETS) {
@@ -73,7 +73,7 @@ class QueryStreamHandler extends Handler {
     return HandlerResponse.notFinished;
   }
 
-  _handleEndOfFields() {
+  HandlerResponse _handleEndOfFields() {
     _state = STATE_ROW_PACKETS;
     _streamController = new StreamController<Row>(onCancel: () {
       _streamController.close();
@@ -83,7 +83,7 @@ class QueryStreamHandler extends Handler {
             stream: _streamController.stream));
   }
 
-  _handleEndOfRows() {
+  HandlerResponse _handleEndOfRows() {
     // the connection's _handler field needs to have been nulled out before the stream is closed,
     // otherwise the stream will be reused in an unfinished state.
     // TODO: can we use Future.delayed elsewhere, to make reusing connections nicer?
@@ -92,25 +92,25 @@ class QueryStreamHandler extends Handler {
     return new HandlerResponse(finished: true);
   }
 
-  _handleHeaderPacket(Buffer response) {
+  void _handleHeaderPacket(Buffer response) {
     _resultSetHeaderPacket = new ResultSetHeaderPacket(response);
     log.fine(_resultSetHeaderPacket.toString());
     _state = STATE_FIELD_PACKETS;
   }
 
-  _handleFieldPacket(Buffer response) {
+  void _handleFieldPacket(Buffer response) {
     var fieldPacket = new Field(response);
     log.fine(fieldPacket.toString());
     fieldPackets.add(fieldPacket);
   }
 
-  _handleRowPacket(Buffer response) {
+  void _handleRowPacket(Buffer response) {
     var dataPacket = new StandardDataPacket(response, fieldPackets);
     log.fine(dataPacket.toString());
     _streamController.add(dataPacket);
   }
 
-  _handleOkPacket(packet) {
+  HandlerResponse _handleOkPacket(OkPacket packet) {
     _okPacket = packet;
     var finished = false;
     // TODO: I think this is to do with multiple queries. Will probably break.

@@ -14,3 +14,4 @@ javaspeed/build
 javaspeed/gradle
 javaspeed/.gradle
 .dart_tool/
+.vscode/

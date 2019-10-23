@@ -15,15 +15,15 @@ import 'package:mysql1/src/constants.dart';
 
 const int MAX_PACKET_SIZE = 16 * 1024 * 1024;
 
-Buffer _createHandshake(protocolVersion, serverVersion, threadId,
-    scrambleBuffer, serverCapabilities,
-    [serverLanguage,
-    serverStatus,
-    serverCapabilities2,
-    scrambleLength,
-    scrambleBuffer2,
-    pluginName,
-    pluginNameNull]) {
+Buffer _createHandshake(int protocolVersion, String serverVersion, int threadId,
+    String scrambleBuffer, int serverCapabilities,
+    [int serverLanguage,
+    int serverStatus,
+    int serverCapabilities2,
+    int scrambleLength,
+    String scrambleBuffer2,
+    String pluginName,
+    dynamic pluginNameNull]) {
   int length = 1 + serverVersion.length + 1 + 4 + 8 + 1 + 2;
   if (serverLanguage != null) {
     length += 1 + 2 + 2 + 1 + 10;
@@ -214,7 +214,7 @@ void main() {
       var serverCapabilities1 = CLIENT_PROTOCOL_41;
       var serverCapabilities2 = CLIENT_PLUGIN_AUTH >> 0x10;
       var scrambleBuffer1 = "abcdefgh";
-      var scrambleBuffer2 = null;
+      String scrambleBuffer2;
       var scrambleLength = scrambleBuffer1.length;
       var pluginName = "plugin name";
       var responseBuffer = _createHandshake(

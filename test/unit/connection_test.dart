@@ -66,9 +66,9 @@ void main() {
       var socket = new MockSocket();
       var cnx = new ReqRespConnection(socket, null, null, MAX_PACKET_SIZE);
 
-      var buffers = [];
+      List<List<int>> buffers = [];
       when(socket.writeBuffer(any)).thenAnswer((mirror) {
-        var buffer = mirror.positionalArguments[0];
+        dynamic buffer = mirror.positionalArguments[0];
         buffers.add(new List<int>.from(buffer.list));
         return new Future.value();
       });

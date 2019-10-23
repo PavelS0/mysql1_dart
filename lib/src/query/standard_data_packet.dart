@@ -31,7 +31,7 @@ class StandardDataPacket extends Row {
   }
 
   Object readField(Field field, Buffer buffer) {
-    var list;
+    List<int> list;
     int length = buffer.readLengthCodedBinary();
     if (length != null) {
       list = buffer.readList(length);

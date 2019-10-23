@@ -36,7 +36,7 @@ class ExecuteQueryHandler extends Handler {
 
   final PreparedQuery _preparedQuery;
   final List _values;
-  List preparedValues;
+  List<Object> preparedValues;
   OkPacket _okPacket;
   bool _executed;
   bool _cancelled = false;
@@ -51,7 +51,7 @@ class ExecuteQueryHandler extends Handler {
     var length = 0;
     var types = new List<int>(_values.length * 2);
     var nullMap = createNullMap();
-    preparedValues = new List(_values.length);
+    preparedValues = List<Object>(_values.length);
     for (var i = 0; i < _values.length; i++) {
       Object value = _values[i];
       int parameterType = _getType(value);
@@ -92,7 +92,7 @@ class ExecuteQueryHandler extends Handler {
     return _prepareString(value);
   }
 
-  int measureValue(value, preparedValue) {
+  int measureValue(dynamic value, Object preparedValue) {
     if (value != null) {
       if (value is int) {
         return _measureInt(value, preparedValue);
@@ -138,7 +138,7 @@ class ExecuteQueryHandler extends Handler {
     return FIELD_TYPE_VARCHAR;
   }
 
-  _writeValue(value, preparedValue, Buffer buffer) {
+  void _writeValue(dynamic value, Object preparedValue, Buffer buffer) {
     if (value != null) {
       if (value is int) {
         _writeInt(value, preparedValue, buffer);
@@ -162,11 +162,11 @@ class ExecuteQueryHandler extends Handler {
     return value;
   }
 
-  int _measureInt(value, preparedValue) {
+  int _measureInt(int value, Object preparedValue) {
     return 8;
   }
 
-  _writeInt(value, preparedValue, Buffer buffer) {
+  void _writeInt(int value, Object preparedValue, Buffer buffer) {
 //          if (value < 128 && value > -127) {
 //            log.fine("TINYINT: value");
 //            types.add(FIELD_TYPE_TINY);
@@ -185,16 +185,16 @@ class ExecuteQueryHandler extends Handler {
 //          }
   }
 
-  _prepareDouble(value) {
+  List<int> _prepareDouble(double value) {
     return utf8.encode(value.toString());
   }
 
-  int _measureDouble(value, preparedValue) {
+  int _measureDouble(double value, List<dynamic> preparedValue) {
     return Buffer.measureLengthCodedBinary(preparedValue.length) +
         preparedValue.length;
   }
 
-  _writeDouble(value, preparedValue, Buffer buffer) {
+  void _writeDouble(double value, List<dynamic> preparedValue, Buffer buffer) {
     log.fine("DOUBLE: $value");
 
     buffer.writeLengthCodedBinary(preparedValue.length);
@@ -206,7 +206,7 @@ class ExecuteQueryHandler extends Handler {
 //          values.addAll(doubleToList(value));
   }
 
-  _prepareDateTime(DateTime value) {
+ DateTime _prepareDateTime(DateTime value) {
     // The driver requires DateTime values to be in UTC and will always give back a UTC DateTime.
     if (!value.isUtc) {
       throw new MySqlClientError("DateTime value is not in UTC");
@@ -214,11 +214,11 @@ class ExecuteQueryHandler extends Handler {
     return value;
   }
 
-  int _measureDateTime(value, preparedValue) {
+  int _measureDateTime(DateTime value, Object preparedValue) {
     return 8;
   }
 
-  _writeDateTime(value, preparedValue, Buffer buffer) {
+  void _writeDateTime(DateTime value, Object preparedValue, Buffer buffer) {
     // TODO remove Date eventually
     log.fine("DATE: $value");
     buffer.writeByte(7);
@@ -231,58 +231,58 @@ class ExecuteQueryHandler extends Handler {
     buffer.writeByte(value.second);
   }
 
-  _prepareBool(value) {
+  bool _prepareBool(bool value) {
     return value;
   }
 
-  int _measureBool(value, preparedValue) {
+  int _measureBool(bool value, Object preparedValue) {
     return 1;
   }
 
-  _writeBool(bool value, preparedValue, Buffer buffer) {
+  void _writeBool(bool value, Object preparedValue, Buffer buffer) {
     log.fine("BOOL: $value");
     buffer.writeByte(value ? 1 : 0);
   }
 
-  _prepareList(value) {
+  List<int> _prepareList(List<int> value) {
     return value;
   }
 
-  int _measureList(value, preparedValue) {
+  int _measureList(List<int> value, Object preparedValue) {
     return Buffer.measureLengthCodedBinary(value.length) + value.length;
   }
 
-  _writeList(value, preparedValue, Buffer buffer) {
+  void _writeList(List<int> value, Object preparedValue, Buffer buffer) {
     log.fine("LIST: $value");
     buffer.writeLengthCodedBinary(value.length);
     buffer.writeList(value);
   }
 
-  _prepareBlob(value) {
-    return (value as Blob).toBytes();
+  List<int> _prepareBlob(Blob value) {
+    return value.toBytes();
   }
 
-  int _measureBlob(value, preparedValue) {
+  int _measureBlob(Blob value, List<Object> preparedValue) {
     return Buffer.measureLengthCodedBinary(preparedValue.length) +
         preparedValue.length;
   }
 
-  _writeBlob(value, preparedValue, Buffer buffer) {
+  void _writeBlob(Blob value, List<Object> preparedValue, Buffer buffer) {
     log.fine("BLOB: $value");
     buffer.writeLengthCodedBinary(preparedValue.length);
     buffer.writeList(preparedValue);
   }
 
-  _prepareString(value) {
+  List<int> _prepareString(dynamic value) {
     return utf8.encode(value.toString());
   }
 
-  int _measureString(value, preparedValue) {
+  int _measureString(String value, List<Object> preparedValue) {
     return Buffer.measureLengthCodedBinary(preparedValue.length) +
         preparedValue.length;
   }
 
-  _writeString(value, preparedValue, Buffer buffer) {
+  void _writeString(String value, List<Object> preparedValue, Buffer buffer) {
     log.fine("STRING: $value");
     buffer.writeLengthCodedBinary(preparedValue.length);
     buffer.writeList(preparedValue);
@@ -330,7 +330,7 @@ class ExecuteQueryHandler extends Handler {
   }
 
   HandlerResponse processResponse(Buffer response) {
-    var packet;
+    dynamic packet;
     if (_cancelled) {
       _streamController.close();
       return new HandlerResponse(finished: true);
@@ -371,7 +371,7 @@ class ExecuteQueryHandler extends Handler {
     return HandlerResponse.notFinished;
   }
 
-  _handleEndOfFields() {
+  HandlerResponse _handleEndOfFields() {
     _state = STATE_ROW_PACKETS;
     _streamController = new StreamController<Row>();
     _streamController.onCancel = () {
@@ -382,26 +382,26 @@ class ExecuteQueryHandler extends Handler {
             stream: _streamController.stream));
   }
 
-  _handleEndOfRows() {
+  HandlerResponse _handleEndOfRows() {
     _streamController.close();
     return new HandlerResponse(finished: true);
   }
 
-  _handleHeaderPacket(Buffer response) {
+  void _handleHeaderPacket(Buffer response) {
     log.fine('Got a header packet');
     _resultSetHeaderPacket = new ResultSetHeaderPacket(response);
     log.fine(_resultSetHeaderPacket.toString());
     _state = STATE_FIELD_PACKETS;
   }
 
-  _handleFieldPacket(Buffer response) {
+  void _handleFieldPacket(Buffer response) {
     log.fine('Got a field packet');
     var fieldPacket = new Field(response);
     log.fine(fieldPacket.toString());
     fieldPackets.add(fieldPacket);
   }
 
-  _handleRowPacket(Buffer response) {
+  void _handleRowPacket(Buffer response) {
     log.fine('Got a row packet');
     var dataPacket = new BinaryDataPacket(response, fieldPackets);
     log.fine(dataPacket.toString());
