@@ -51,7 +51,7 @@ void main() {
     _MockBufferedSocket m = new _MockBufferedSocket();
     ReqRespConnection r = new ReqRespConnection(m, null, null, 1024);
     MySqlConnection conn =
-        new MySqlConnection(const Duration(microseconds: 5), r);
+        new MySqlConnection(const Duration(microseconds: 5), r, null);
     await conn.close(); // does not timeout the test.
   });
 
@@ -60,7 +60,7 @@ void main() {
     _MockBufferedSocket m = new _MockBufferedSocket();
     ReqRespConnection r = new ReqRespConnection(m, null, null, 1024);
     MySqlConnection conn =
-        new MySqlConnection(const Duration(microseconds: 5), r);
+        new MySqlConnection(const Duration(microseconds: 5), r, null);
     expect(conn.query("SELECT 1"), throwsA(timeoutMatcher));
   });
 

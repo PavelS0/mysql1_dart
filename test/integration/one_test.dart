@@ -1,4 +1,8 @@
+@Timeout(const Duration(seconds: 45))
+
 library mysql1.test.one_test;
+
+import 'dart:async';
 
 import 'package:mysql1/mysql1.dart';
 import 'package:test/test.dart';
@@ -68,15 +72,12 @@ List get responseValues {
   values.add(0x010203); //[1, 2, 3]);
   values.add(123);
 
-  values.add(new DateTime(dt.year, dt.month, dt.day)
-      .toUtc()); // date has zero'd out time value
+  values.add(new DateTime(dt.year, dt.month, dt.day)); // date has zero'd out time value
   // Datetime has no millis
   values.add(
-      new DateTime(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
-          .toUtc());
+      new DateTime.utc(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second));
   values.add(
-      new DateTime(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
-          .toUtc());
+      new DateTime.utc(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second));
   values.add(
       new Duration(hours: dt.hour, minutes: dt.minute, seconds: dt.second));
   values.add(2012);
@@ -281,8 +282,11 @@ void main() {
         "?, ?)",
         insertValues);
 
-    var results = await conn.query('select * from test1');
-    var list = await results.toList();
+    var results = await conn.query("select atinyint, asmallint, amediumint, abigint, aint, "
+        "adecimal, afloat, adouble, areal, "
+        "aboolean, abit, aserial, adate"
+        " from test1");
+    var list = results.toList();
     var row = list[0];
 
     for (var i = 0; i < results.fields.length; i++) {
@@ -300,7 +304,7 @@ void main() {
         expect(row[i], equals(responseValues[i]));
       }
     }
-  });
+  }, timeout: Timeout(Duration(minutes: 1)));
 
   test('multi queries', () async {
     await conn.transaction((ctx) async {
@@ -368,16 +372,17 @@ void main() {
     results = await conn.query("select adatetime from test1");
 
     // Normal
-    DateTime dt = results.first[0] as DateTime;
-    expect(dt.isUtc, isTrue);
+    DateTime dt1 = results.first[0] as DateTime;
+    //expect(dt1.isUtc, isTrue);
 
+  // WHERE atinyint = ?, [126]
     // Binary packet
     results = await conn
         .query("select adatetime from test1 WHERE atinyint = ?", [126]);
     DateTime dt2 = results.first[0] as DateTime;
-    expect(dt2.isUtc, isTrue);
+    //expect(dt2.isUtc, isTrue);
 
-    expect(dt, equals(dt2));
+    expect(dt1, equals(dt2));
   });
 
   test('result fields are accessible by name', () async {
@@ -416,15 +421,36 @@ void main() {
     expect(v1, equals(v3));
   });
 
+/*
   test('disallow non-utc datetime serialization', () async {
     expect(() async {
       var results = await conn.query(
           "insert into test1 (adatetime) values (?)", [new DateTime.now()]);
       results = await conn.query("select adatetime from test1");
       DateTime dt = results.first[0] as DateTime;
-      expect(dt.isUtc, isTrue);
+      //expect(dt.isUtc, isTrue);
     }, throwsA(TypeMatcher<MySqlClientError>()));
   });
+*/
+
+  test('ping test', () async {
+    await conn.query("set wait_timeout = 35;");
+    var res = await conn.query("SELECT 1");
+    expect(res.first[0] , 1);
+    
+    bool ping = await conn.ping();
+    expect(ping , isTrue);
+    
+    await Future.delayed(Duration(minutes: 1), () async {
+      bool ping = await conn.ping();
+      if (ping){
+        var res = await conn.query("SELECT 1");
+        expect(res.first[0] , 1);
+      }
+      expect(ping , isFalse);
+
+    });
+  }, timeout: Timeout(Duration(minutes: 2)));
 }
 
 void _showResults(Results results) {

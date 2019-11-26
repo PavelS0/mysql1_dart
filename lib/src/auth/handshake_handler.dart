@@ -8,6 +8,7 @@ import '../buffer.dart';
 import '../handlers/handler.dart';
 import '../mysql_client_error.dart';
 import '../constants.dart';
+import '../server_params.dart';
 import 'ssl_handler.dart';
 import 'auth_handler.dart';
 
@@ -19,25 +20,18 @@ class HandshakeHandler extends Handler {
   final String _db;
   final int _maxPacketSize;
   final int _characterSet;
-
-  int protocolVersion;
-  String serverVersion;
-  int threadId;
-  List<int> scrambleBuffer;
-  int serverCapabilities;
-  int serverLanguage;
-  int serverStatus;
-  int scrambleLength;
-  String pluginName;
-  bool useCompression = false;
-  bool useSSL = false;
-
+  bool _useCompression = false;
+  bool _useSSL = false;
+  ServerPar _par;
+  
+  ServerPar get par => _par;
+  
   HandshakeHandler(String this._user, String this._password,
       int this._maxPacketSize, int this._characterSet,
       [String db, bool useCompression, bool useSSL])
       : _db = db,
-        this.useCompression = useCompression,
-        this.useSSL = useSSL,
+        this._useCompression = useCompression,
+        this._useSSL = useSSL,
         super(new Logger("HandshakeHandler"));
 
   /**
@@ -49,6 +43,16 @@ class HandshakeHandler extends Handler {
   }
 
   void readResponseBuffer(Buffer response) {
+    int protocolVersion;
+    String serverVersion;
+    int threadId;
+    List<int> scrambleBuffer;
+    int serverCapabilities;
+    int serverLanguage;
+    int serverStatus;
+    int scrambleLength;
+    String pluginName;
+
     response.seek(0);
     protocolVersion = response.readByte();
     if (protocolVersion != 10) {
@@ -90,6 +94,10 @@ class HandshakeHandler extends Handler {
         }
       }
     }
+
+    _par = ServerPar(protocolVersion, serverVersion, threadId, scrambleBuffer, 
+      serverCapabilities, serverLanguage, serverStatus, scrambleLength, 
+        pluginName, _useCompression, _useSSL);
   }
 
   /**
@@ -104,19 +112,19 @@ class HandshakeHandler extends Handler {
 
     readResponseBuffer(response);
 
-    if ((serverCapabilities & CLIENT_PROTOCOL_41) == 0) {
+    if ((_par.serverCapabilities & CLIENT_PROTOCOL_41) == 0) {
       throw new MySqlClientError("Unsupported protocol (must be 4.1 or newer");
     }
 
-    if ((serverCapabilities & CLIENT_SECURE_CONNECTION) == 0) {
+    if ((_par.serverCapabilities & CLIENT_SECURE_CONNECTION) == 0) {
       throw new MySqlClientError(
           "Old Password AUthentication is not supported");
     }
 
-    if ((serverCapabilities & CLIENT_PLUGIN_AUTH) != 0 &&
-        pluginName != MYSQL_NATIVE_PASSWORD) {
+    if ((_par.serverCapabilities & CLIENT_PLUGIN_AUTH) != 0 &&
+        _par.pluginName != MYSQL_NATIVE_PASSWORD) {
       throw new MySqlClientError(
-          "Authentication plugin not supported: $pluginName");
+          "Authentication plugin not supported: ${_par.pluginName}");
     }
 
     int clientFlags = CLIENT_PROTOCOL_41 |
@@ -126,21 +134,21 @@ class HandshakeHandler extends Handler {
         CLIENT_SECURE_CONNECTION |
         CLIENT_MULTI_RESULTS;
 
-    if (useCompression && (serverCapabilities & CLIENT_COMPRESS) != 0) {
+    if (_par.useCompression && (_par.serverCapabilities & CLIENT_COMPRESS) != 0) {
       log.shout("Compression enabled");
       clientFlags |= CLIENT_COMPRESS;
     } else {
-      useCompression = false;
+      _par.useCompression = false;
     }
 
-    if (useSSL && (serverCapabilities & CLIENT_SSL) != 0) {
+    if (_par.useSSL && (_par.serverCapabilities & CLIENT_SSL) != 0) {
       log.shout("SSL enabled");
       clientFlags |= CLIENT_SSL | CLIENT_SECURE_CONNECTION;
     } else {
-      useSSL = false;
+      _par.useSSL = false;
     }
 
-    if (useSSL) {
+    if (_par.useSSL) {
       return new HandlerResponse(
           nextHandler: new SSLHandler(
               clientFlags,
@@ -150,7 +158,7 @@ class HandshakeHandler extends Handler {
                 _user,
                 _password,
                 _db,
-                scrambleBuffer,
+                _par.scrambleBuffer,
                 clientFlags,
                 _maxPacketSize,
                 _characterSet,
@@ -158,7 +166,7 @@ class HandshakeHandler extends Handler {
     }
 
     return new HandlerResponse(
-        nextHandler: new AuthHandler(_user, _password, _db, scrambleBuffer,
+        nextHandler: new AuthHandler(_user, _password, _db, _par.scrambleBuffer,
             clientFlags, _maxPacketSize, _characterSet));
   }
 }

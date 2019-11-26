@@ -3,6 +3,7 @@
 library mysql1.standard_data_packet;
 
 import 'dart:convert';
+import '../server_params.dart';
 import 'package:logging/logging.dart';
 
 import '../constants.dart';
@@ -14,11 +15,11 @@ import '../results/field.dart';
 
 class StandardDataPacket extends Row {
   final Logger log = new Logger("StandardDataPacket");
-
+  final ServerPar serverPar;
   /// Values as Map
   final Map<String, dynamic> fields = <String, dynamic>{};
 
-  StandardDataPacket(Buffer buffer, List<Field> fieldPackets) {
+  StandardDataPacket(Buffer buffer, List<Field> fieldPackets, this.serverPar) {
     values = new List<dynamic>(fieldPackets.length);
     for (var i = 0; i < fieldPackets.length; i++) {
       var field = fieldPackets[i];
@@ -65,7 +66,8 @@ class StandardDataPacket extends Row {
       case FIELD_TYPE_DATETIME: // datetime
       case FIELD_TYPE_TIMESTAMP: // timestamp
         var s = utf8.decode(list);
-        return DateTime.parse(s).toUtc();
+        DateTime dt = DateTime.parse(s);
+        return dt;
         break;
       case FIELD_TYPE_TIME: // time
         var s = utf8.decode(list);

@@ -17,6 +17,7 @@ import '../results/row.dart';
 import '../results/field.dart';
 import '../results/results_impl.dart';
 
+import '../server_params.dart';
 import 'result_set_header_packet.dart';
 import 'standard_data_packet.dart';
 
@@ -25,6 +26,7 @@ class QueryStreamHandler extends Handler {
   static const int STATE_FIELD_PACKETS = 1;
   static const int STATE_ROW_PACKETS = 2;
   final String _sql;
+  final ServerPar _serverPar;
   int _state = STATE_HEADER_PACKET;
 
   OkPacket _okPacket;
@@ -33,7 +35,7 @@ class QueryStreamHandler extends Handler {
 
   StreamController<Row> _streamController;
 
-  QueryStreamHandler(String this._sql)
+  QueryStreamHandler(this._sql, this._serverPar)
       : super(new Logger("QueryStreamHandler"));
 
   Buffer createRequest() {
@@ -105,7 +107,7 @@ class QueryStreamHandler extends Handler {
   }
 
   void _handleRowPacket(Buffer response) {
-    var dataPacket = new StandardDataPacket(response, fieldPackets);
+    var dataPacket = new StandardDataPacket(response, fieldPackets, _serverPar);
     log.fine(dataPacket.toString());
     _streamController.add(dataPacket);
   }

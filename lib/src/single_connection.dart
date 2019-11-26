@@ -6,19 +6,22 @@ import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:logging/logging.dart';
-import 'package:mysql1/src/prepared_statements/prepared_query.dart';
+import 'handlers/ok_packet.dart';
+import 'prepared_statements/prepared_query.dart';
+import 'server_params.dart';
 
 import 'auth/handshake_handler.dart';
 import 'auth/ssl_handler.dart';
 import 'buffer.dart';
 import 'buffered_socket.dart';
 import 'handlers/handler.dart';
+import 'handlers/ping_handler.dart';
 import 'mysql_client_error.dart';
 import 'mysql_exception.dart';
 import 'handlers/quit_handler.dart';
 import 'package:pool/pool.dart';
-import 'package:mysql1/src/auth/character_set.dart';
-import 'package:mysql1/src/results/results_impl.dart';
+import 'auth/character_set.dart';
+import 'results/results_impl.dart';
 import 'prepared_statements/close_statement_handler.dart';
 import 'prepared_statements/execute_query_handler.dart';
 import 'prepared_statements/prepare_handler.dart';
@@ -72,11 +75,15 @@ class ConnectionSettings {
 /// must call [close] when you are done.
 class MySqlConnection {
   final Duration _timeout;
+  final ServerPar serverPar;
 
   ReqRespConnection _conn;
+
+  bool get isIdle => _conn._handler == null;
+ 
   bool _sentClose = false;
 
-  MySqlConnection(this._timeout, this._conn);
+  MySqlConnection(this._timeout, this._conn, this.serverPar);
 
   /// Close the connection
   ///
@@ -133,14 +140,14 @@ class MySqlConnection {
       conn.handleError(new SocketException.closed());
     });
 
-    Handler handler = new HandshakeHandler(c.user, c.password, c.maxPacketSize,
+    HandshakeHandler handler = new HandshakeHandler(c.user, c.password, c.maxPacketSize,
         c.characterSet, c.db, c.useCompression, c.useSSL);
     handshakeCompleter = new Completer<void>();
     conn = new ReqRespConnection(
         socket, handler, handshakeCompleter, c.maxPacketSize);
 
     await handshakeCompleter.future.timeout(c.timeout);
-    return new MySqlConnection(c.timeout, conn);
+    return new MySqlConnection(c.timeout, conn, handler.par);
   }
 
   /// Run [sql] query on the database using [values] as positional sql parameters.
@@ -149,7 +156,7 @@ class MySqlConnection {
   Future<Results> query(String sql, [List<Object> values]) async {
     if (values == null || values.isEmpty) {
       return _conn.processHandlerWithResults(
-          new QueryStreamHandler(sql), _timeout);
+          new QueryStreamHandler(sql, serverPar), _timeout);
     }
 
     return (await queryMulti(sql, [values])).first;
@@ -197,6 +204,19 @@ class MySqlConnection {
       return e;
     }
     await query("commit");
+  }
+
+  Future<bool> ping() async {
+    bool ping = false;
+    try {
+      dynamic resp = await _conn.processHandler<OkPacket>(PingHandler(), _timeout);
+      if (resp != null && resp is OkPacket){
+        ping = true;
+      }
+    } on StateError catch (e) {
+      
+    }
+    return ping;
   }
 }
 
@@ -328,8 +348,8 @@ class ReqRespConnection {
     try {
       var response = _handler.processResponse(buffer);
       if (_handler is HandshakeHandler) {
-        _useCompression = (_handler as HandshakeHandler).useCompression;
-        _useSSL = (_handler as HandshakeHandler).useSSL;
+        _useCompression = (_handler as HandshakeHandler).par.useCompression;
+        _useSSL = (_handler as HandshakeHandler).par.useSSL;
       }
       if (response.nextHandler != null) {
         // if handler.processResponse() returned a Handler, pass control to that handler now

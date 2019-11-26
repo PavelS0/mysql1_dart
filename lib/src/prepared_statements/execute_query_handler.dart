@@ -6,7 +6,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:logging/logging.dart';
-import 'package:mysql1/src/mysql_client_error.dart';
 
 import '../constants.dart';
 import '../buffer.dart';
@@ -208,9 +207,9 @@ class ExecuteQueryHandler extends Handler {
 
  DateTime _prepareDateTime(DateTime value) {
     // The driver requires DateTime values to be in UTC and will always give back a UTC DateTime.
-    if (!value.isUtc) {
+    /*if (!value.isUtc) {
       throw new MySqlClientError("DateTime value is not in UTC");
-    }
+    }*/
     return value;
   }
 

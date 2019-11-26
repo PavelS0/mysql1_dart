@@ -20,6 +20,10 @@ void main() {
   initializeTest();
 
   test('connection test', () async {
+    //Ping database
+    bool ping = await conn.ping();
+    expect(ping, isTrue);
+    
     await conn.query("DROP TABLE IF EXISTS t1");
     await conn.query("CREATE TABLE IF NOT EXISTS t1 (a INT)");
     var r = await conn.query("INSERT INTO `t1` (a) VALUES (?)", [1]);
@@ -39,6 +43,9 @@ void main() {
     }
 
     // Check the conn is still ok after the error
+    ping = await conn.ping();
+    expect(ping, isTrue);
+
     r = await conn.query("SELECT * FROM `t1` WHERE a = ?", [1]);
     expect(r.length, 1);
   });

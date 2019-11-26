@@ -103,13 +103,13 @@ void main() {
           scrambleBuffer2);
       handler.readResponseBuffer(responseBuffer);
 
-      expect(handler.serverVersion, equals(serverVersion));
-      expect(handler.threadId, equals(threadId));
-      expect(handler.serverLanguage, equals(serverLanguage));
-      expect(handler.serverStatus, equals(serverStatus));
-      expect(handler.serverCapabilities, equals(serverCapabilities1));
-      expect(handler.scrambleLength, equals(scrambleLength));
-      expect(handler.scrambleBuffer,
+      expect(handler.par.serverVersion, equals(serverVersion));
+      expect(handler.par.threadId, equals(threadId));
+      expect(handler.par.serverLanguage, equals(serverLanguage));
+      expect(handler.par.serverStatus, equals(serverStatus));
+      expect(handler.par.serverCapabilities, equals(serverCapabilities1));
+      expect(handler.par.scrambleLength, equals(scrambleLength));
+      expect(handler.par.scrambleBuffer,
           equals((scrambleBuffer1 + scrambleBuffer2).codeUnits));
     });
 
@@ -126,11 +126,11 @@ void main() {
           new HandshakeHandler("", "", MAX_PACKET_SIZE, CharacterSet.UTF8MB4);
       handler.readResponseBuffer(responseBuffer);
 
-      expect(handler.serverVersion, equals(serverVersion));
-      expect(handler.threadId, equals(threadId));
-      expect(handler.serverCapabilities, equals(serverCapabilities));
-      expect(handler.serverLanguage, equals(null));
-      expect(handler.serverStatus, equals(null));
+      expect(handler.par.serverVersion, equals(serverVersion));
+      expect(handler.par.threadId, equals(threadId));
+      expect(handler.par.serverCapabilities, equals(serverCapabilities));
+      expect(handler.par.serverLanguage, equals(null));
+      expect(handler.par.serverStatus, equals(null));
     });
 
     test('should read plugin name', () {
@@ -164,7 +164,7 @@ void main() {
           false);
       handler.readResponseBuffer(responseBuffer);
 
-      expect(handler.pluginName, equals(pluginName));
+      expect(handler.par.pluginName, equals(pluginName));
     });
 
     test('should read plugin name with null', () {
@@ -198,7 +198,7 @@ void main() {
           true);
       handler.readResponseBuffer(responseBuffer);
 
-      expect(handler.pluginName, equals(pluginName));
+      expect(handler.par.pluginName, equals(pluginName));
     });
 
     test('should read buffer without scramble data', () {
@@ -232,7 +232,7 @@ void main() {
           true);
       handler.readResponseBuffer(responseBuffer);
 
-      expect(handler.pluginName, equals(pluginName));
+      expect(handler.par.pluginName, equals(pluginName));
     });
 
     test('should read buffer with short scramble data length', () {
@@ -266,7 +266,7 @@ void main() {
           true);
       handler.readResponseBuffer(responseBuffer);
 
-      expect(handler.pluginName, equals(pluginName));
+      expect(handler.par.pluginName, equals(pluginName));
     });
   });
 
@@ -309,8 +309,8 @@ void main() {
           scrambleBuffer2);
       var response = handler.processResponse(responseBuffer);
 
-      expect(handler.useCompression, isFalse);
-      expect(handler.useSSL, isFalse);
+      expect(handler.par.useCompression, isFalse);
+      expect(handler.par.useSSL, isFalse);
 
       expect(response, new isInstanceOf<HandlerResponse>());
       expect(response.nextHandler, new isInstanceOf<AuthHandler>());
@@ -363,8 +363,8 @@ void main() {
           true);
       var response = handler.processResponse(responseBuffer);
 
-      expect(handler.useCompression, isFalse);
-      expect(handler.useSSL, isFalse);
+      expect(handler.par.useCompression, isFalse);
+      expect(handler.par.useSSL, isFalse);
 
       expect(response, new isInstanceOf<HandlerResponse>());
       expect(response.nextHandler, new isInstanceOf<AuthHandler>());
@@ -456,8 +456,8 @@ void main() {
           scrambleBuffer2);
       var response = handler.processResponse(responseBuffer);
 
-      expect(handler.useCompression, isFalse);
-      expect(handler.useSSL, isTrue);
+      expect(handler.par.useCompression, isFalse);
+      expect(handler.par.useSSL, isTrue);
 
       expect(response, new isInstanceOf<HandlerResponse>());
       expect(response.nextHandler, new isInstanceOf<SSLHandler>());

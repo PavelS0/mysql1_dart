@@ -1,4 +1,5 @@
 library mysql1.test.test_infrastructure;
+@Timeout(const Duration(seconds: 60))
 
 import 'package:options_file/options_file.dart';
 import 'package:mysql1/mysql1.dart';
@@ -18,6 +19,7 @@ void initializeTest([String tableName, String createSql, String insertSql]) {
     port: options.getInt('port', 3306),
     db: options.getString('db'),
     host: options.getString('host', 'localhost'),
+    timeout: Duration(seconds: 160)
   );
 
   setUp(() async {
