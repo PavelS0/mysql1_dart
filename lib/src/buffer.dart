@@ -1,4 +1,4 @@
-library sjljocky.buffer;
+library mysql.buffer;
 
 import 'dart:io';
 import 'dart:convert';

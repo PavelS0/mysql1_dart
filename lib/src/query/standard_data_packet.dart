@@ -3,9 +3,9 @@
 library mysql1.standard_data_packet;
 
 import 'dart:convert';
-import '../server_params.dart';
 import 'package:logging/logging.dart';
 
+import '../server_params.dart';
 import '../constants.dart';
 import '../blob.dart';
 import '../buffer.dart';

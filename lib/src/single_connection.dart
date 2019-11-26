@@ -6,7 +6,9 @@ import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:logging/logging.dart';
-import 'handlers/ok_packet.dart';
+import 'package:pool/pool.dart';
+
+
 import 'prepared_statements/prepared_query.dart';
 import 'server_params.dart';
 
@@ -16,10 +18,12 @@ import 'buffer.dart';
 import 'buffered_socket.dart';
 import 'handlers/handler.dart';
 import 'handlers/ping_handler.dart';
+import 'handlers/ok_packet.dart';
+import 'handlers/quit_handler.dart';
+
 import 'mysql_client_error.dart';
 import 'mysql_exception.dart';
-import 'handlers/quit_handler.dart';
-import 'package:pool/pool.dart';
+
 import 'auth/character_set.dart';
 import 'results/results_impl.dart';
 import 'prepared_statements/close_statement_handler.dart';
